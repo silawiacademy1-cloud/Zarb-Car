@@ -1,0 +1,1318 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>نبرد در جاده — جدول ضرب | آکادمی سیلاوی</title>
+<script>
+function imgFallback(img){
+  if(!img.dataset.step){ img.dataset.step='1'; }
+  if(img.dataset.step==='1'){
+    img.dataset.step='2';
+    img.src='https://cdn.imgurl.ir/uploads/u216188_ChatGPT_Image_Sep_10_2026_01_24_36_PM.png';
+  } else {
+    img.style.display='none';
+    var fb=img.parentElement.querySelector('.designer-fallback');
+    if(fb) fb.style.display='flex';
+  }
+}
+window.addEventListener('error',function(e){ console.error('JS Error:',e.message,'line',e.lineno); });
+</script>
+<style>
+:root{--primary:#FF5252;--secondary:#448AFF;--success:#69F0AE;--warning:#FFD740;--dark:#2c3e50;}
+*{margin:0;padding:0;box-sizing:border-box;user-select:none;font-family:Tahoma,Arial,sans-serif;}
+body{background:#2E7D32;overflow:hidden;touch-action:none;}
+#gameCanvas{display:block;margin:0 auto;box-shadow:0 0 30px rgba(0,0,0,.9);}
+.hud{position:absolute;top:10px;width:100%;display:flex;justify-content:space-between;padding:0 20px;pointer-events:none;z-index:10;}
+.hud-box{background:rgba(255,255,255,.95);padding:10px 15px;border-radius:15px;border:2px solid #ccc;box-shadow:0 5px 15px rgba(0,0,0,.4);font-weight:bold;color:var(--dark);font-size:14px;pointer-events:auto;}
+.level-banner{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:linear-gradient(145deg,#FFD740,#FF8F00);padding:8px 25px;border-radius:20px;font-size:20px;font-weight:900;color:#fff;border:3px solid #fff;box-shadow:0 5px 15px rgba(0,0,0,.5);z-index:20;text-shadow:1px 1px 2px rgba(0,0,0,.5);transition:transform .3s;}
+.mute-btn{background:#fff;border:2px solid #ccc;border-radius:50%;width:40px;height:40px;font-size:20px;cursor:pointer;box-shadow:0 4px 6px rgba(0,0,0,.3);display:flex;justify-content:center;align-items:center;margin-bottom:10px;}
+
+.controls{
+  position:absolute;bottom:6px;left:0;right:0;
+  display:flex;justify-content:space-between;align-items:flex-end;
+  padding:0 12px;z-index:10;pointer-events:none;
+  direction:ltr;
+}
+.btn-dir,.btn-fire{pointer-events:auto;}
+
+.btn-dir{
+  position:relative;width:52px;height:52px;border-radius:16px;
+  border:none;cursor:pointer;outline:none;
+  background:linear-gradient(145deg,#5C6BC0,#283593);
+  box-shadow:0 3px 0 #1A237E inset,0 5px 0 #1A237E,0 8px 0 #0D1642,
+             0 11px 16px rgba(0,0,0,.5),0 15px 25px rgba(0,0,0,.3);
+  color:#fff;display:flex;justify-content:center;align-items:center;
+  transition:all .08s ease-out;overflow:hidden;
+}
+.btn-dir::before{content:'';position:absolute;top:3px;left:4px;right:4px;height:18px;
+  background:linear-gradient(180deg,rgba(255,255,255,.55),rgba(255,255,255,.05));
+  border-radius:12px 12px 6px 6px;pointer-events:none;}
+.btn-dir::after{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(120deg,transparent 0 5px,rgba(255,255,255,.04) 5px 7px);
+  pointer-events:none;border-radius:16px;}
+.btn-dir .icon{position:relative;z-index:2;
+  text-shadow:0 2px 4px rgba(0,0,0,.7),0 -1px 0 rgba(255,255,255,.25);font-size:22px;line-height:1;}
+.btn-dir:active{transform:translateY(5px);
+  box-shadow:0 2px 0 #1A237E inset,0 1px 0 #1A237E,0 2px 0 #0D1642,
+             0 4px 7px rgba(0,0,0,.5),0 7px 12px rgba(0,0,0,.3);}
+
+.btn-fire{
+  position:relative;width:64px;height:64px;border-radius:50%;
+  border:none;cursor:pointer;outline:none;
+  background:radial-gradient(circle at 30% 25%,#FFE082 0%,#FFB300 25%,#FF6F00 60%,#B71C1C 100%);
+  box-shadow:0 0 0 3px rgba(255,255,255,.15) inset,0 0 0 5px rgba(255,193,7,.35) inset,
+             0 4px 0 #7F0000 inset,0 6px 0 #5A0000,0 9px 0 #2B0000,
+             0 13px 20px rgba(0,0,0,.55),0 0 22px rgba(255,87,34,.7);
+  color:#fff;display:flex;justify-content:center;align-items:center;
+  transition:all .08s ease-out;overflow:hidden;animation:firePulse 1.6s ease-in-out infinite;
+}
+.btn-fire::before{content:'';position:absolute;top:4px;left:8px;right:8px;height:24px;
+  background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,0));
+  border-radius:50% 50% 40% 40%;pointer-events:none;}
+.btn-fire::after{content:'';position:absolute;inset:7px;border-radius:50%;
+  border:2px dashed rgba(255,255,255,.35);pointer-events:none;animation:ringSpin 8s linear infinite;}
+.btn-fire .icon{position:relative;z-index:2;
+  text-shadow:0 3px 6px rgba(0,0,0,.6),0 0 10px rgba(255,235,59,.9);font-size:26px;
+  animation:rocketBounce 1.4s ease-in-out infinite;}
+.btn-fire:active{transform:translateY(6px) scale(.97);
+  box-shadow:0 0 0 3px rgba(255,255,255,.15) inset,0 0 0 5px rgba(255,193,7,.35) inset,
+             0 2px 0 #7F0000 inset,0 2px 0 #5A0000,0 3px 0 #2B0000,
+             0 5px 9px rgba(0,0,0,.55),0 0 12px rgba(255,87,34,.9);animation:none;}
+@keyframes firePulse{
+  0%,100%{box-shadow:0 0 0 3px rgba(255,255,255,.15) inset,0 0 0 5px rgba(255,193,7,.35) inset,
+    0 4px 0 #7F0000 inset,0 6px 0 #5A0000,0 9px 0 #2B0000,
+    0 13px 20px rgba(0,0,0,.55),0 0 22px rgba(255,87,34,.7);}
+  50%{box-shadow:0 0 0 3px rgba(255,255,255,.15) inset,0 0 0 5px rgba(255,193,7,.35) inset,
+    0 4px 0 #7F0000 inset,0 6px 0 #5A0000,0 9px 0 #2B0000,
+    0 13px 20px rgba(0,0,0,.55),0 0 34px rgba(255,87,34,1);}
+}
+@keyframes ringSpin{to{transform:rotate(360deg);}}
+@keyframes rocketBounce{0%,100%{transform:translateY(0);}50%{transform:translateY(-2px);}}
+
+#questionModal,#startModal,#gameOverModal,#messageModal,#guideModal,#level10Modal{
+  position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);
+  display:none;justify-content:center;align-items:center;z-index:100;}
+#guideModal{z-index:150;}#level10Modal{z-index:180;}
+#countdownModal{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);
+  display:none;justify-content:center;align-items:center;z-index:200;color:#FFD740;text-align:center;overflow:hidden;}
+#countdownText{font-size:120px;font-weight:900;text-shadow:0 10px 30px rgba(0,0,0,.8);display:block;}
+.encouragement{font-size:40px;color:#69F0AE;text-shadow:0 5px 15px rgba(0,0,0,.9);
+  margin-bottom:20px;font-weight:900;animation:popIn .5s ease-out;padding:0 10px;}
+@keyframes popIn{0%{transform:scale(.5);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.modal-content{background:#fff;padding:25px;border-radius:20px;text-align:center;
+  max-width:95%;width:450px;border:4px solid var(--warning);
+  box-shadow:0 10px 40px rgba(0,0,0,.7);max-height:95vh;overflow-y:auto;}
+.start-screen-content{padding:18px 20px;width:400px;display:flex;flex-direction:column;align-items:center;}
+.modal-content h2{margin-bottom:15px;color:var(--dark);font-size:22px;}
+.modal-content input{width:100%;padding:15px;font-size:18px;border:2px solid #ccc;border-radius:10px;
+  margin-bottom:8px;text-align:center;outline:none;font-family:inherit;}
+.modal-content input:focus{border-color:var(--secondary);}
+.modal-content input.error{border-color:var(--primary);background:#FFF5F5;}
+.name-error{color:var(--primary);font-size:13px;font-weight:bold;min-height:20px;margin-bottom:10px;display:none;}
+.name-error.show{display:block;}
+.options-grid{display:grid;grid-template-columns:1fr;gap:10px;margin-top:15px;}
+.option-btn{background:var(--secondary);color:white;border:none;padding:14px;font-size:16px;
+  font-weight:bold;border-radius:10px;cursor:pointer;box-shadow:0 4px 0 #1976D2;
+  transition:background .2s,transform .1s;white-space:normal;line-height:1.5;font-family:inherit;}
+.option-btn:active{transform:translateY(4px);box-shadow:none;}
+.start-btn{background:linear-gradient(145deg,#69F0AE,#00C853);color:var(--dark);border:none;
+  padding:15px 35px;font-size:18px;font-weight:bold;border-radius:15px;cursor:pointer;
+  box-shadow:0 6px 0 #009624;transition:transform .1s,box-shadow .1s;margin-top:10px;width:100%;font-family:inherit;}
+.start-btn:active{transform:translateY(6px);box-shadow:0 0 0 #009624;}
+.continue-btn{background:linear-gradient(145deg,#FF9800,#F57C00);box-shadow:0 6px 0 #E65100;color:white;margin-bottom:10px;}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:15px;text-align:right;
+  background:#f8f9fa;padding:15px;border-radius:10px;border:1px solid #ddd;margin-bottom:15px;}
+.motivation{font-size:16px;color:#1976D2;font-weight:bold;margin-bottom:20px;}
+.boss-hp-bar{position:absolute;top:60px;left:50%;transform:translateX(-50%);width:80%;height:20px;
+  background:#333;border:2px solid #FFF;border-radius:10px;display:none;z-index:10;}
+.boss-hp-fill{width:100%;height:100%;background:#FF1744;border-radius:8px;transition:width .2s;}
+.guide-list{display:flex;flex-direction:column;gap:12px;padding:10px 0;margin-bottom:15px;}
+.guide-item{background:linear-gradient(145deg,#fff,#f0f0f0);border-radius:15px;padding:12px 15px;
+  box-shadow:5px 5px 10px #d9d9d9,-5px -5px 10px #fff;border:1px solid #eee;
+  display:flex;align-items:center;gap:12px;text-align:right;font-size:14px;line-height:1.6;color:#333;}
+.guide-item .icon{font-size:28px;display:flex;align-items:center;justify-content:center;min-width:40px;}
+.confetti{position:absolute;width:10px;height:10px;opacity:.8;}
+@keyframes shootUp{0%{transform:translateY(0) scale(1) rotate(0);opacity:1;}
+  100%{transform:translate(var(--tx),var(--ty)) scale(0) rotate(720deg);opacity:0;}}
+@media print{body *{visibility:hidden;}#gameOverModal,#gameOverModal *{visibility:visible;}
+  #gameOverModal{position:absolute;left:0;top:0;background:#fff!important;display:block;}
+  .modal-content{border:none;box-shadow:none;width:100%;margin:0 auto;}.no-print{display:none!important;}}
+.eitaa-link{background:#28A745;display:inline-flex;align-items:center;gap:8px;padding:8px 16px;
+  border-radius:30px;color:#fff;text-decoration:none;font-weight:bold;margin-top:12px;margin-bottom:5px;
+  font-size:14px;transition:.2s;}
+.eitaa-link:hover{background:#1E7E34;transform:scale(1.02);}
+.cert-signature{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:15px;
+  padding-top:12px;border-top:2px dashed #ba68c8;}
+.cert-signature img{width:45px;height:45px;border-radius:50%;border:2px solid #ba68c8;object-fit:cover;}
+.cert-signature .info{text-align:right;line-height:1.4;}
+.cert-signature .info small{display:block;color:#888;font-size:11px;}
+.cert-signature .info b{color:#7b1fa2;font-size:13px;}
+
+.hero-title{font-size:21px;font-weight:900;line-height:1.6;margin:8px 0 4px;
+  background:linear-gradient(135deg,#FF5252,#FF9800,#FFD740,#FF5252);background-size:300% 300%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:gradientShift 4s ease infinite;text-align:center;}
+@keyframes gradientShift{0%,100%{background-position:0% 50%;}50%{background-position:100% 50%;}}
+.hero-tagline{font-size:13.5px;font-weight:bold;color:#444;text-align:center;line-height:1.9;margin:8px 0 4px;}
+.hero-tagline .em{background:linear-gradient(135deg,#FFD740,#FF8F00);color:#fff;padding:2px 8px;
+  border-radius:8px;font-size:12.5px;display:inline-block;margin:2px;box-shadow:0 2px 6px rgba(255,143,0,.4);}
+
+.designer-showcase{display:flex;flex-direction:column;align-items:center;margin:4px 0 12px;width:100%;}
+.designer-photo-wrap{position:relative;width:118px;height:118px;border-radius:50%;overflow:hidden;
+  border:4px solid var(--primary);
+  box-shadow:0 6px 24px rgba(255,82,82,.4),0 0 0 5px rgba(255,255,255,.95),0 0 0 8px rgba(255,215,64,.5);
+  background:linear-gradient(135deg,#FF5252,#FF9800);
+  display:flex;align-items:center;justify-content:center;transition:transform .3s;}
+.designer-photo-wrap:hover{transform:scale(1.05) rotate(-3deg);}
+.designer-photo{width:100%;height:100%;object-fit:cover;display:block;}
+.designer-fallback{position:absolute;inset:0;display:none;flex-direction:column;
+  align-items:center;justify-content:center;color:#fff;
+  text-shadow:0 2px 4px rgba(0,0,0,.5);text-align:center;background:linear-gradient(135deg,#FF5252,#FF9800);}
+.designer-fallback .em3{font-size:32px;line-height:1;}
+.designer-fallback .txt2{font-size:12px;font-weight:900;margin-top:4px;}
+.designer-badge{display:flex;align-items:center;gap:8px;
+  background:linear-gradient(135deg,#7b1fa2,#ab47bc);color:#fff;padding:6px 16px;border-radius:20px;
+  margin-top:10px;box-shadow:0 4px 12px rgba(123,31,162,.4);}
+.designer-badge .badge-icon{font-size:18px;}
+.designer-badge .badge-text{text-align:right;line-height:1.3;}
+.designer-badge small{display:block;font-size:10px;opacity:.9;font-weight:bold;}
+.designer-badge b{font-size:14px;font-weight:900;}
+
+/* ============================================================
+   ✅ پس‌زمینهٔ هیجان‌انگیز برای صفحهٔ اول و دوم
+============================================================ */
+#startModal, #guideModal {
+  background:
+    radial-gradient(circle at 15% 15%, rgba(255,82,82,0.45) 0%, transparent 45%),
+    radial-gradient(circle at 85% 85%, rgba(68,138,255,0.45) 0%, transparent 45%),
+    radial-gradient(circle at 50% 50%, rgba(171,71,188,0.4) 0%, transparent 65%),
+    linear-gradient(135deg, #05081a 0%, #1a0828 100%);
+  overflow: hidden;
+}
+#startModal::before, #guideModal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(2px 2px at 15% 25%, #fff, transparent),
+    radial-gradient(2px 2px at 55% 65%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 35% 55%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 75% 25%, #fff, transparent),
+    radial-gradient(2px 2px at 10% 75%, #fff, transparent),
+    radial-gradient(1px 1px at 65% 45%, #fff, transparent),
+    radial-gradient(1.5px 1.5px at 90% 60%, #fff, transparent),
+    radial-gradient(1px 1px at 45% 85%, #fff, transparent);
+  opacity: 0.6;
+  animation: twinkle 3s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+@keyframes twinkle {
+  from { opacity: 0.3; }
+  to { opacity: 0.85; }
+}
+@keyframes modalGlowGold {
+  0%,100% {
+    box-shadow:
+      0 0 25px rgba(255,215,64,0.6),
+      0 20px 50px rgba(0,0,0,0.8),
+      inset 0 0 40px rgba(123,31,162,0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 45px rgba(255,215,64,0.95),
+      0 20px 50px rgba(0,0,0,0.8),
+      inset 0 0 60px rgba(123,31,162,0.45);
+  }
+}
+@keyframes modalGlowGreen {
+  0%,100% {
+    box-shadow:
+      0 0 25px rgba(105,240,174,0.6),
+      0 20px 50px rgba(0,0,0,0.8),
+      inset 0 0 40px rgba(76,175,80,0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 45px rgba(105,240,174,0.95),
+      0 20px 50px rgba(0,0,0,0.8),
+      inset 0 0 60px rgba(76,175,80,0.45);
+  }
+}
+#startModal .modal-content {
+  background: linear-gradient(160deg, rgba(25,30,70,0.97) 0%, rgba(60,20,70,0.97) 100%);
+  color: #fff;
+  border: 3px solid #FFD740;
+  position: relative;
+  z-index: 1;
+  animation: modalGlowGold 3s ease-in-out infinite;
+}
+#guideModal .modal-content {
+  background: linear-gradient(160deg, rgba(20,45,40,0.97) 0%, rgba(20,40,70,0.97) 100%);
+  color: #fff;
+  border: 3px solid #69F0AE;
+  position: relative;
+  z-index: 1;
+  animation: modalGlowGreen 3s ease-in-out infinite;
+}
+#startModal .hero-tagline {
+  color: #e8e8e8;
+}
+#guideModal .guide-item {
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.25);
+  box-shadow: none;
+}
+#startModal input:not(.error),
+#guideModal input:not(.error) {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 2px solid rgba(255,215,64,0.4);
+  font-weight: bold;
+}
+#startModal input::placeholder,
+#guideModal input::placeholder {
+  color: rgba(255,255,255,0.55);
+}
+#startModal input:focus,
+#guideModal input:focus {
+  border-color: #FFD740;
+  background: rgba(255,255,255,0.22);
+  box-shadow: 0 0 18px rgba(255,215,64,0.6);
+}
+#startModal input.error {
+  background: rgba(255,82,82,0.25);
+  border-color: #FF5252;
+  color: #fff;
+}
+</style>
+</head>
+<body>
+
+<div class="hud" id="hud" style="display:none;">
+  <div style="display:flex;flex-direction:column;">
+    <button id="muteBtn" class="mute-btn" onclick="toggleMute()">🔊</button>
+    <div class="hud-box">
+      ⏱ زمان: <span id="timeDisplay">۰</span>s<br>
+      🛣 مسافت: <span id="distDisplay">۰٫۰</span> km<br>
+      ⚡ سرعت: <span id="speedDisplay">۱۰۰</span>٪
+    </div>
+  </div>
+  <div id="levelDisplay" class="level-banner">سطح ۱</div>
+  <div class="hud-box" style="text-align:left;">
+    👤 <span id="nameDisplay">بازیکن</span><br>
+    ⭐ امتیاز: <span id="scoreDisplay">۰</span><br>
+    ❤️ جان: <span id="livesDisplay">❤️❤️❤️❤️❤️</span><br>
+    🔫 تیر: <span id="ammoDisplay">۵</span><br>
+    ✅ صحیح: <span id="correctDisplay">۰</span>
+  </div>
+</div>
+
+<div class="boss-hp-bar" id="bossHpBar"><div class="boss-hp-fill" id="bossHpFill"></div></div>
+<canvas id="gameCanvas"></canvas>
+
+<div class="controls" id="controls" style="display:none;">
+  <button class="btn-dir" id="btnLeft" aria-label="چپ"><span class="icon">◀</span></button>
+  <button class="btn-fire" id="btnShoot" aria-label="آتش"><span class="icon">🚀</span></button>
+  <button class="btn-dir" id="btnRight" aria-label="راست"><span class="icon">▶</span></button>
+</div>
+
+<div id="startModal" style="display:flex;">
+  <div class="modal-content start-screen-content">
+    <div class="designer-showcase">
+      <div class="designer-photo-wrap">
+        <img src="https://cdn.imgurl.ir/uploads/r373944_.png" alt="آکادمی سیلاوی"
+             class="designer-photo" onerror="imgFallback(this)">
+        <div class="designer-fallback">
+          <span class="em3">🎓</span>
+          <span class="txt2">آکادمی سیلاوی</span>
+        </div>
+      </div>
+      <div class="designer-badge">
+        <span class="badge-icon">🎮</span>
+        <div class="badge-text">
+          <small>طراح بازی</small>
+          <b>آکادمی سیلاوی</b>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-title">🏎️ پلی به سوی قهرمانی ریاضی! 🏆</div>
+    <p class="hero-tagline">
+      <span class="em">🎯 ماشینت رو هدایت کن</span>
+      <span class="em">📐 ضرب‌ها رو فتح کن</span>
+      <span class="em">💥 پایگاه دشمن رو نابود کن</span>
+    </p>
+
+    <a href="https://eitaa.com/silawiacademy" target="_blank" class="eitaa-link" style="margin-bottom:14px;">📢 عضویت در کانال ایتا (آکادمی سیلاوی)</a>
+
+    <input type="text" id="playerNameInput" placeholder="اسم قهرمانت رو بنویس..." maxlength="20" autocomplete="off">
+    <div id="nameError" class="name-error">⚠️ لطفاً نام خود را وارد کنید (حداقل ۲ حرف)</div>
+    <button class="start-btn" onclick="showGuide()">🚀 شروع ماجراجویی!</button>
+  </div>
+</div>
+
+<div id="guideModal">
+  <div class="modal-content">
+    <h2 style="color:#69F0AE;margin-bottom:20px;">📚 راهنمای بازی</h2>
+    <div class="guide-list">
+      <div class="guide-item"><div class="icon">🕹️</div><div><b>حرکت:</b> با دکمه‌های جهت کیبورد یا دکمه‌های گوشهٔ صفحه به چپ و راست ببر.</div></div>
+      <div class="guide-item"><div class="icon">💥</div><div><b>شلیک:</b> با دکمهٔ موشکی (🚀) یا کلید <b>Space</b> کیبورد شلیک کن.</div></div>
+      <div class="guide-item"><div class="icon">💖</div><div><strong style="color:#FF80AB;">قلب (تعمیر):</strong> با پاسخ به سوال جدول ضرب، یک جان اضافه می‌گیری.</div></div>
+      <div class="guide-item"><div class="icon">💠</div><div><strong style="color:#40C4FF;">خشاب:</strong> با پاسخ به سوال جدول ضرب، ۵ تیر می‌گیری.</div></div>
+      <div class="guide-item"><div class="icon">⚡</div><div><strong style="color:#FFD740;">توربو:</strong> سرعتت را موقتاً زیاد می‌کند.</div></div>
+    </div>
+    <button class="start-btn" onclick="startGame()">فهمیدم، بزن بریم!</button>
+  </div>
+</div>
+
+<div id="level10Modal">
+  <div class="modal-content">
+    <h2 style="color:#4CAF50;font-size:26px;">🎉 قهرمان شدی!</h2>
+    <p style="font-size:16px;margin-bottom:25px;font-weight:bold;line-height:1.8;color:#555;">
+      تبریک! ۱۰ مرحله اصلی رو با موفقیت به پایان رسوندی و تمام پایگاه‌ها رو نابود کردی.
+    </p>
+    <button class="start-btn continue-btn" onclick="continueEndless()">ادامه رکوردزنی 🚀</button>
+    <button class="start-btn" style="background:linear-gradient(145deg,#FFD740,#FFC400);color:var(--dark);" onclick="showFinalReport()">نمایش کارنامه 🏆</button>
+  </div>
+</div>
+
+<div id="questionModal">
+  <div class="modal-content">
+    <h2 id="questionText">سوال</h2>
+    <div class="options-grid" id="optionsContainer"></div>
+  </div>
+</div>
+
+<div id="countdownModal">
+  <div>
+    <div id="encouragementText" class="encouragement" style="display:none;"></div>
+    <span id="countdownText">۳</span>
+  </div>
+</div>
+
+<div id="messageModal">
+  <div class="modal-content">
+    <h2 id="msgBoxText" style="color:#4CAF50;font-size:26px;line-height:1.6;"></h2>
+  </div>
+</div>
+
+<div id="gameOverModal">
+  <div class="modal-content">
+    <h2 id="gameOverTitle">💥 تصادف کردی! کارنامه بازی</h2>
+    <div class="stats-grid">
+      <div>👤 بازیکن: <span id="finalName"></span></div>
+      <div>🏆 سطح: <span id="finalLevel"></span></div>
+      <div>⭐ امتیاز: <span id="finalScore"></span></div>
+      <div>⏱ زمان: <span id="finalTime"></span> ثانیه</div>
+      <div>🛣 مسافت: <span id="finalDist"></span> کیلومتر</div>
+      <div>⚡ سرعت: <span id="finalSpeed"></span>٪</div>
+      <div style="grid-column:span 2;text-align:center;">✅ پاسخ صحیح: <span id="finalCorrect"></span></div>
+    </div>
+    <div class="motivation" id="gameoverMotiv">شکست مقدمه پیروزیه!</div>
+    <div class="cert-signature">
+      <img src="https://cdn.imgurl.ir/uploads/r373944_.png" alt="آکادمی سیلاوی" onerror="this.style.display='none'">
+      <div class="info"><small>طراحی و ایده</small><b>آکادمی سیلاوی</b></div>
+    </div>
+    <button class="start-btn continue-btn no-print" id="btnRevive" onclick="revivePlayer()" style="display:none;margin-top:15px;">ادامه بده (آخرین فرصت)</button>
+    <button class="start-btn no-print" onclick="window.print()" style="background:linear-gradient(145deg,#FFD740,#FFC400);color:var(--dark);margin-bottom:10px;margin-top:10px;">چاپ کارنامه</button>
+    <button class="start-btn no-print" onclick="location.reload()">دوباره بازی کن</button>
+  </div>
+</div>
+
+<script>
+function toFa(val){
+  const fa=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+  return String(val).replace(/\d/g,d=>fa[+d]).replace('.','٫');
+}
+
+let bgMusic,shootSoundTemplate,tankAudio,reloadAudio,turboAudio,applauseAudio;
+let audioCtx, isMuted=false;
+function initMediaFiles(){
+  if(!bgMusic){
+    try{
+      bgMusic=new Audio('https://dl.sevilmusics.com/cdn/music/srvrs/Non%20Vocal%20Bass%20Music%20_04%20%5BSevilMusic%5D.mp3');
+      bgMusic.loop=true;bgMusic.volume=.3;
+      shootSoundTemplate=new Audio('https://sedatoseda.com/wp-content/uploads/shotgun-sound.mp3');shootSoundTemplate.volume=.8;
+      tankAudio=new Audio('https://sedatoseda.com/wp-content/uploads/tank-moving-143104.mp3');tankAudio.loop=true;tankAudio.volume=.6;
+      reloadAudio=new Audio('https://dl4.fara-download.ir/audio/sound_effect/objects/guns/reload/gun_reload3.mp3');reloadAudio.volume=.9;
+      turboAudio=new Audio('https://sedatoseda.com/wp-content/uploads/Turbo-sound-2.mp3');turboAudio.volume=.8;
+      applauseAudio=new Audio('https://sedatoseda.com/wp-content/uploads/Applause-Sound-2.mp3');applauseAudio.volume=.8;
+    }catch(e){console.warn('Audio init:',e);}
+  }
+  try{
+    if(!audioCtx) audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    if(audioCtx.state==='suspended') audioCtx.resume();
+  }catch(e){console.warn('AudioCtx:',e);}
+}
+function playSfx(type){
+  if(isMuted||!audioCtx) return;
+  try{
+    const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+    osc.connect(gain);gain.connect(audioCtx.destination);
+    gain.gain.value=1;
+    const now=audioCtx.currentTime;
+    if(type==='crash'){osc.type='sawtooth';osc.frequency.setValueAtTime(150,now);osc.frequency.exponentialRampToValueAtTime(10,now+.5);gain.gain.setValueAtTime(1,now);gain.gain.exponentialRampToValueAtTime(.01,now+.5);osc.start(now);osc.stop(now+.5);}
+    else if(type==='powerup'){osc.type='sine';osc.frequency.setValueAtTime(400,now);osc.frequency.linearRampToValueAtTime(800,now+.3);gain.gain.setValueAtTime(1,now);gain.gain.exponentialRampToValueAtTime(.01,now+.3);osc.start(now);osc.stop(now+.3);}
+    else if(type==='correct'){osc.type='square';osc.frequency.setValueAtTime(400,now);osc.frequency.setValueAtTime(600,now+.1);gain.gain.setValueAtTime(1,now);gain.gain.exponentialRampToValueAtTime(.01,now+.3);osc.start(now);osc.stop(now+.3);}
+    else if(type==='wrong'){osc.type='sawtooth';osc.frequency.setValueAtTime(300,now);osc.frequency.linearRampToValueAtTime(100,now+.4);gain.gain.setValueAtTime(1,now);gain.gain.exponentialRampToValueAtTime(.01,now+.4);osc.start(now);osc.stop(now+.4);}
+    else if(type==='enemyShoot'){osc.type='square';osc.frequency.setValueAtTime(800,now);osc.frequency.exponentialRampToValueAtTime(100,now+.2);gain.gain.setValueAtTime(.5,now);gain.gain.exponentialRampToValueAtTime(.01,now+.2);osc.start(now);osc.stop(now+.2);}
+  }catch(e){}
+}
+function toggleMute(){
+  isMuted=!isMuted;
+  const btn=document.getElementById('muteBtn');
+  if(isMuted){if(bgMusic)bgMusic.pause();if(tankAudio)tankAudio.pause();if(turboAudio)turboAudio.pause();if(applauseAudio)applauseAudio.pause();btn.innerText='🔇';}
+  else{if(bgMusic)bgMusic.play().catch(e=>console.log(e));btn.innerText='🔊';}
+}
+
+const canvas=document.getElementById('gameCanvas');
+const ctx=canvas.getContext('2d');
+let width,height,roadWidth;
+let isPaused=true,gameLoopId,gameInterval;
+let frames=0,time=0,score=0,lives=5,ammo=5,distance=0,level=1,correctAnswers=0;
+let playerName="";
+let roadOffset=0,gameSpeed=5,initialGameSpeed=5,maxSpeedReached=100,difficultyMultiplier=1;
+let hasRevived=false,activePowerup=null;
+let targetLanes=3,currentLanes=3,laneWidth,curveDirection=1,targetCurveMagnitude=0,currentCurveMagnitude=0;
+let MAX_LEVEL=10,isEndlessMode=false;
+let lastTurboTime=0,lastRepairTime=0,lastAmmoTime=0,lastShieldTime=0;
+let isBossMode=false,boss=null,bossBullets=[],preBossGameSpeed=5,bossBasesDestroyed=0;
+let enemies=[],bullets=[],powerups=[];
+
+const mathList=[
+  {w:"حاصل ضرب ۲ در ۲ چند است؟",m:"۴",opts:["۳","۴","۵","۶"]},
+  {w:"حاصل ضرب ۲ در ۳ چند است؟",m:"۶",opts:["۵","۶","۷","۸"]},
+  {w:"حاصل ضرب ۲ در ۴ چند است؟",m:"۸",opts:["۶","۷","۸","۹"]},
+  {w:"حاصل ضرب ۲ در ۵ چند است؟",m:"۱۰",opts:["۸","۹","۱۰","۱۲"]},
+  {w:"حاصل ضرب ۲ در ۶ چند است؟",m:"۱۲",opts:["۱۰","۱۱","۱۲","۱۴"]},
+  {w:"حاصل ضرب ۲ در ۷ چند است؟",m:"۱۴",opts:["۱۲","۱۳","۱۴","۱۶"]},
+  {w:"حاصل ضرب ۲ در ۸ چند است؟",m:"۱۶",opts:["۱۴","۱۵","۱۶","۱۸"]},
+  {w:"حاصل ضرب ۲ در ۹ چند است؟",m:"۱۸",opts:["۱۶","۱۷","۱۸","۲۰"]},
+  {w:"حاصل ضرب ۳ در ۲ چند است؟",m:"۶",opts:["۴","۵","۶","۷"]},
+  {w:"حاصل ضرب ۳ در ۳ چند است؟",m:"۹",opts:["۶","۸","۹","۱۲"]},
+  {w:"حاصل ضرب ۳ در ۴ چند است؟",m:"۱۲",opts:["۹","۱۱","۱۲","۱۵"]},
+  {w:"حاصل ضرب ۳ در ۵ چند است؟",m:"۱۵",opts:["۱۲","۱۴","۱۵","۱۸"]},
+  {w:"حاصل ضرب ۳ در ۶ چند است؟",m:"۱۸",opts:["۱۵","۱۶","۱۸","۲۱"]},
+  {w:"حاصل ضرب ۳ در ۷ چند است؟",m:"۲۱",opts:["۱۸","۲۰","۲۱","۲۴"]},
+  {w:"حاصل ضرب ۴ در ۲ چند است؟",m:"۸",opts:["۶","۷","۸","۱۰"]},
+  {w:"حاصل ضرب ۴ در ۳ چند است؟",m:"۱۲",opts:["۹","۱۰","۱۲","۱۴"]},
+  {w:"حاصل ضرب ۴ در ۴ چند است؟",m:"۱۶",opts:["۱۲","۱۴","۱۶","۲۰"]},
+  {w:"حاصل ضرب ۴ در ۵ چند است؟",m:"۲۰",opts:["۱۶","۱۸","۲۰","۲۴"]},
+  {w:"حاصل ضرب ۴ در ۶ چند است؟",m:"۲۴",opts:["۲۰","۲۲","۲۴","۲۸"]},
+  {w:"حاصل ضرب ۵ در ۲ چند است؟",m:"۱۰",opts:["۸","۹","۱۰","۱۲"]},
+  {w:"حاصل ضرب ۵ در ۳ چند است؟",m:"۱۵",opts:["۱۲","۱۳","۱۵","۱۸"]},
+  {w:"حاصل ضرب ۵ در ۴ چند است؟",m:"۲۰",opts:["۱۶","۱۸","۲۰","۲۵"]},
+  {w:"حاصل ضرب ۵ در ۵ چند است؟",m:"۲۵",opts:["۲۰","۲۲","۲۵","۳۰"]},
+  {w:"حاصل ضرب ۶ در ۲ چند است؟",m:"۱۲",opts:["۱۰","۱۱","۱۲","۱۴"]},
+  {w:"حاصل ضرب ۶ در ۳ چند است؟",m:"۱۸",opts:["۱۵","۱۶","۱۸","۲۰"]}
+];
+let availableMathList=[...mathList];
+
+const player={
+  lane:1,currentX:0,y:0,turboTimer:0,shieldTimer:0,
+  draw(){
+    let targetX=15+(this.lane*laneWidth)+(laneWidth/2);
+    this.currentX+=(targetX-this.currentX)*.2;
+    let finalX=this.currentX+getCurveOffset(this.y);
+    drawCar(ctx,finalX,this.y,"#D50000",true);
+    if(this.turboTimer>0){
+      ctx.fillStyle="#00E5FF";ctx.shadowColor="#00E5FF";ctx.shadowBlur=15;
+      ctx.beginPath();
+      ctx.arc(finalX-8,this.y+30,4+Math.random()*3,0,Math.PI*2);
+      ctx.arc(finalX+8,this.y+30,4+Math.random()*3,0,Math.PI*2);
+      ctx.fill();ctx.shadowBlur=0;
+    }
+    if(this.shieldTimer>0){
+      ctx.strokeStyle="rgba(255,215,0,.9)";ctx.lineWidth=4;
+      ctx.beginPath();ctx.ellipse(finalX,this.y,40,60,0,0,Math.PI*2);ctx.stroke();
+      ctx.fillStyle="rgba(255,215,0,.15)";ctx.fill();
+    }
+  }
+};
+
+function resize(){
+  width=window.innerWidth>600?600:window.innerWidth;
+  height=window.innerHeight;
+  canvas.width=width;canvas.height=height;
+  roadWidth=width-30;
+  laneWidth=roadWidth/currentLanes;
+  player.y=height-175;
+  player.currentX=15+(player.lane*laneWidth)+(laneWidth/2);
+}
+window.addEventListener('resize',resize);
+
+function getCurveOffset(y){
+  let relativeY=height-y;if(relativeY<0)relativeY=0;
+  let factor=Math.pow(relativeY/height,1.5);
+  return Math.sin(distance*.003*curveDirection)*factor*(width*currentCurveMagnitude);
+}
+function getEncouragement(){
+  const list=[`آفرین ${playerName}! 🥇`,`عالی بود ریاضی‌دان! 🌟`,`تو بی‌نظیری ${playerName}! 🚀`,`ایول ریاضی‌دان کوچک! 💡`,`فوق‌العاده‌ای! 🤩`];
+  return list[Math.floor(Math.random()*list.length)];
+}
+
+function drawCar(ctx,x,y,baseColor,isPlayer=false,isEnemy=false){
+  ctx.save();ctx.translate(x,y);
+  if(isEnemy) ctx.rotate(Math.PI);
+  ctx.scale(.65,.65);
+
+  ctx.save();ctx.shadowColor="rgba(0,0,0,.55)";ctx.shadowBlur=18;ctx.shadowOffsetY=10;
+  ctx.fillStyle="rgba(0,0,0,.35)";
+  ctx.beginPath();ctx.ellipse(0,8,26,46,0,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  let bodyGrad=ctx.createLinearGradient(-25,0,25,0);
+  if(baseColor==="#D50000"){
+    bodyGrad.addColorStop(0,"#4A0000");bodyGrad.addColorStop(.15,"#B71C1C");
+    bodyGrad.addColorStop(.35,"#FF5252");bodyGrad.addColorStop(.5,"#FF8A80");
+    bodyGrad.addColorStop(.65,"#FF5252");bodyGrad.addColorStop(.85,"#B71C1C");bodyGrad.addColorStop(1,"#4A0000");
+  } else {
+    bodyGrad.addColorStop(0,"#0A1A4A");bodyGrad.addColorStop(.15,"#1565C0");
+    bodyGrad.addColorStop(.35,"#42A5F5");bodyGrad.addColorStop(.5,"#90CAF9");
+    bodyGrad.addColorStop(.65,"#42A5F5");bodyGrad.addColorStop(.85,"#1565C0");bodyGrad.addColorStop(1,"#0A1A4A");
+  }
+  function bodyPath(){
+    ctx.beginPath();
+    ctx.moveTo(-18,-46);ctx.quadraticCurveTo(-24,-32,-24,-18);
+    ctx.lineTo(-24,30);ctx.quadraticCurveTo(-24,44,-17,47);
+    ctx.lineTo(17,47);ctx.quadraticCurveTo(24,44,24,30);
+    ctx.lineTo(24,-18);ctx.quadraticCurveTo(24,-32,18,-46);
+    ctx.quadraticCurveTo(0,-50,-18,-46);ctx.closePath();
+  }
+  bodyPath();ctx.fillStyle=bodyGrad;ctx.fill();
+
+  let topLight=ctx.createLinearGradient(0,-48,0,48);
+  topLight.addColorStop(0,"rgba(255,255,255,.45)");topLight.addColorStop(.25,"rgba(255,255,255,.15)");
+  topLight.addColorStop(.6,"rgba(0,0,0,.05)");topLight.addColorStop(1,"rgba(0,0,0,.35)");
+  bodyPath();ctx.fillStyle=topLight;ctx.fill();
+
+  let wsGrad=ctx.createLinearGradient(0,-38,0,-10);
+  wsGrad.addColorStop(0,"#0D1B4E");wsGrad.addColorStop(.4,"#283593");
+  wsGrad.addColorStop(.65,"#5C6BC0");wsGrad.addColorStop(1,"#3949AB");
+  ctx.fillStyle=wsGrad;
+  ctx.beginPath();
+  ctx.moveTo(-15,-40);ctx.quadraticCurveTo(0,-44,15,-40);
+  ctx.lineTo(14,-12);ctx.quadraticCurveTo(0,-10,-14,-12);ctx.closePath();ctx.fill();
+
+  ctx.save();ctx.clip();
+  let refl=ctx.createLinearGradient(-20,-42,15,-10);
+  refl.addColorStop(0,"rgba(255,255,255,.75)");refl.addColorStop(.35,"rgba(255,255,255,.1)");
+  refl.addColorStop(.6,"rgba(255,255,255,0)");refl.addColorStop(1,"rgba(255,255,255,.25)");
+  ctx.fillStyle=refl;ctx.fillRect(-20,-45,40,38);ctx.restore();
+
+  let roofGrad=ctx.createLinearGradient(0,-10,0,20);
+  roofGrad.addColorStop(0,"#ECEFF1");roofGrad.addColorStop(.4,"#B0BEC5");
+  roofGrad.addColorStop(.75,"#78909C");roofGrad.addColorStop(1,"#546E7A");
+  ctx.fillStyle=roofGrad;
+  ctx.beginPath();
+  ctx.moveTo(-13,-10);ctx.quadraticCurveTo(-15,5,-13,18);
+  ctx.quadraticCurveTo(0,22,13,18);ctx.quadraticCurveTo(15,5,13,-10);
+  ctx.quadraticCurveTo(0,-12,-13,-10);ctx.closePath();ctx.fill();
+
+  ctx.fillStyle="#1C262B";
+  ctx.beginPath();ctx.moveTo(-13,-8);ctx.lineTo(-11,15);ctx.lineTo(-6,17);ctx.lineTo(-6,-10);ctx.closePath();ctx.fill();
+  ctx.beginPath();ctx.moveTo(13,-8);ctx.lineTo(11,15);ctx.lineTo(6,17);ctx.lineTo(6,-10);ctx.closePath();ctx.fill();
+
+  let rwGrad=ctx.createLinearGradient(0,18,0,42);
+  rwGrad.addColorStop(0,"#263238");rwGrad.addColorStop(1,"#0D1B4E");
+  ctx.fillStyle=rwGrad;
+  ctx.beginPath();ctx.moveTo(-12,20);ctx.quadraticCurveTo(0,22,12,20);
+  ctx.lineTo(13,38);ctx.quadraticCurveTo(0,42,-13,38);ctx.closePath();ctx.fill();
+
+  if(isPlayer){
+    ctx.fillStyle="rgba(255,255,255,.95)";ctx.fillRect(-3,-46,6,92);
+    ctx.fillStyle="rgba(255,193,7,.95)";ctx.fillRect(-1,-46,2,92);
+  }
+
+  ctx.save();
+  ctx.shadowColor="#FFF59D";ctx.shadowBlur=22;ctx.fillStyle="#FFFDE7";
+  ctx.beginPath();
+  ctx.ellipse(-13,-44,5.5,3,0,0,Math.PI*2);
+  ctx.ellipse(13,-44,5.5,3,0,0,Math.PI*2);ctx.fill();ctx.restore();
+  ctx.fillStyle="#FFFFFF";
+  ctx.beginPath();
+  ctx.ellipse(-13,-44,2.5,1.3,0,0,Math.PI*2);
+  ctx.ellipse(13,-44,2.5,1.3,0,0,Math.PI*2);ctx.fill();
+
+  ctx.save();
+  ctx.shadowColor="#FF1744";ctx.shadowBlur=16;ctx.fillStyle="#FF1744";
+  ctx.beginPath();ctx.roundRect(-18,42,11,4,2);ctx.roundRect(7,42,11,4,2);ctx.fill();
+  ctx.restore();
+
+  function drawWheel(wx,wy){
+    ctx.save();ctx.translate(wx,wy);
+    ctx.fillStyle="#0A0A0A";ctx.beginPath();ctx.roundRect(-6.5,-11,13,22,3);ctx.fill();
+    ctx.strokeStyle="#2E2E2E";ctx.lineWidth=.9;
+    for(let i=-9;i<11;i+=3.5){ctx.beginPath();ctx.moveTo(-5.5,i);ctx.lineTo(5.5,i);ctx.stroke();}
+    let rimGrad=ctx.createRadialGradient(-1,-1,1,0,0,4);
+    rimGrad.addColorStop(0,"#B0BEC5");rimGrad.addColorStop(.6,"#607D8B");rimGrad.addColorStop(1,"#37474F");
+    ctx.fillStyle=rimGrad;ctx.beginPath();ctx.roundRect(-3,-3.5,6,7,1.2);ctx.fill();
+    ctx.fillStyle="rgba(255,255,255,.7)";ctx.fillRect(-2.2,-2.5,1.6,1.6);
+    ctx.restore();
+  }
+  drawWheel(-23,-33);drawWheel(23,-33);drawWheel(-23,29);drawWheel(23,29);
+
+  ctx.fillStyle=baseColor;
+  ctx.beginPath();
+  ctx.ellipse(-22,-26,3,5.5,0,0,Math.PI*2);
+  ctx.ellipse(22,-26,3,5.5,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="rgba(255,255,255,.4)";
+  ctx.beginPath();
+  ctx.ellipse(-22,-27,1.5,3,0,0,Math.PI*2);
+  ctx.ellipse(22,-27,1.5,3,0,0,Math.PI*2);ctx.fill();
+
+  ctx.save();bodyPath();ctx.clip();
+  let sheen=ctx.createLinearGradient(-25,-48,-5,-48);
+  sheen.addColorStop(0,"rgba(255,255,255,.4)");sheen.addColorStop(1,"rgba(255,255,255,0)");
+  ctx.fillStyle=sheen;ctx.fillRect(-25,-55,50,110);ctx.restore();
+
+  ctx.restore();
+}
+
+function drawTank(ctx,x,y,hp,scale=.6){
+  ctx.save();ctx.translate(x,y);ctx.rotate(Math.PI);ctx.scale(scale,scale);
+
+  ctx.save();ctx.shadowColor="rgba(0,0,0,.7)";ctx.shadowBlur=25;ctx.shadowOffsetY=12;
+  ctx.fillStyle="rgba(0,0,0,.4)";
+  ctx.beginPath();ctx.ellipse(0,5,45,55,0,0,Math.PI*2);ctx.fill();ctx.restore();
+
+  function drawTrack(side){
+    let tx=side*30;
+    let trackGrad=ctx.createLinearGradient(tx-10,0,tx+10,0);
+    trackGrad.addColorStop(0,"#0A0A0A");trackGrad.addColorStop(.5,"#3A3A3A");trackGrad.addColorStop(1,"#0A0A0A");
+    ctx.fillStyle=trackGrad;ctx.beginPath();ctx.roundRect(tx-10,-55,20,110,5);ctx.fill();
+    for(let i=-52;i<50;i+=8){
+      let tread=ctx.createLinearGradient(tx-10,i,tx+10,i);
+      tread.addColorStop(0,"#000");tread.addColorStop(.5,"#5A5A5A");tread.addColorStop(1,"#000");
+      ctx.fillStyle=tread;ctx.fillRect(tx-9,i,18,5);
+    }
+    ctx.fillStyle="rgba(255,255,255,.12)";ctx.fillRect(tx-9,-53,3,106);
+  }
+  drawTrack(-1);drawTrack(1);
+
+  let hullGrad=ctx.createLinearGradient(-25,0,25,0);
+  hullGrad.addColorStop(0,"#0D2410");hullGrad.addColorStop(.2,"#2E7D32");
+  hullGrad.addColorStop(.5,"#81C784");hullGrad.addColorStop(.8,"#2E7D32");hullGrad.addColorStop(1,"#0D2410");
+  ctx.fillStyle=hullGrad;ctx.beginPath();ctx.roundRect(-25,-50,50,100,8);ctx.fill();
+
+  let hullTop=ctx.createLinearGradient(0,-50,0,50);
+  hullTop.addColorStop(0,"rgba(255,255,255,.35)");hullTop.addColorStop(.35,"rgba(255,255,255,0)");
+  hullTop.addColorStop(.75,"rgba(0,0,0,.15)");hullTop.addColorStop(1,"rgba(0,0,0,.5)");
+  ctx.fillStyle=hullTop;ctx.beginPath();ctx.roundRect(-23,-48,46,96,7);ctx.fill();
+
+  let barrelGrad=ctx.createLinearGradient(-10,0,10,0);
+  barrelGrad.addColorStop(0,"#0A1F0C");barrelGrad.addColorStop(.3,"#2E7D32");
+  barrelGrad.addColorStop(.5,"#A5D6A7");barrelGrad.addColorStop(.7,"#2E7D32");barrelGrad.addColorStop(1,"#0A1F0C");
+  ctx.fillStyle=barrelGrad;ctx.beginPath();ctx.roundRect(-9,-88,18,58,3);ctx.fill();
+  ctx.fillStyle="#000";ctx.beginPath();ctx.ellipse(0,-88,9,4,0,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#546E7A";ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(0,-88,9,4,0,0,Math.PI*2);ctx.stroke();
+
+  let turretGrad=ctx.createRadialGradient(-8,-8,5,0,5,30);
+  turretGrad.addColorStop(0,"#C8E6C9");turretGrad.addColorStop(.35,"#66BB6A");
+  turretGrad.addColorStop(.75,"#2E7D32");turretGrad.addColorStop(1,"#0D2410");
+  ctx.fillStyle=turretGrad;ctx.beginPath();ctx.arc(0,5,27,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle="rgba(255,255,255,.3)";ctx.beginPath();ctx.arc(-8,-4,11,0,Math.PI*2);ctx.fill();
+
+  ctx.fillStyle="#0A1F0C";
+  for(let a=0;a<Math.PI*2;a+=Math.PI/4){
+    let rx=Math.cos(a)*20,ry=Math.sin(a)*20+5;
+    ctx.beginPath();ctx.arc(rx,ry,1.6,0,Math.PI*2);ctx.fill();
+  }
+  ctx.strokeStyle="#333";ctx.lineWidth=1.5;
+  ctx.beginPath();ctx.moveTo(15,5);ctx.lineTo(15,-35);ctx.stroke();
+  ctx.fillStyle="#FF1744";ctx.beginPath();ctx.arc(15,-35,2.2,0,Math.PI*2);ctx.fill();
+
+  if(hp<=5&&scale>1){
+    ctx.fillStyle="rgba(255,60,0,.45)";ctx.beginPath();ctx.arc(0,5,27,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="rgba(40,40,40,.6)";
+    for(let i=0;i<4;i++){
+      let sx=(Math.random()-.5)*35,sy=-20-Math.random()*25;
+      ctx.beginPath();ctx.arc(sx,sy,3+Math.random()*4,0,Math.PI*2);ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+function drawPowerupIcon(ctx,x,y,type){
+  ctx.save();ctx.translate(x,y);ctx.scale(.75,.75);
+  ctx.beginPath();ctx.arc(0,0,22,0,Math.PI*2);
+  if(type==='repair'){
+    ctx.fillStyle="rgba(255,20,147,.3)";ctx.shadowColor="#FF1493";ctx.shadowBlur=15;ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle="#FF1493";
+    ctx.beginPath();ctx.moveTo(0,8);ctx.bezierCurveTo(-10,-2,-20,-8,-10,-15);
+    ctx.bezierCurveTo(-2,-20,0,-10,0,-10);ctx.bezierCurveTo(0,-10,2,-20,10,-15);
+    ctx.bezierCurveTo(20,-8,10,-2,0,8);ctx.fill();
+  } else if(type==='ammo'){
+    ctx.fillStyle="rgba(0,229,255,.3)";ctx.shadowColor="#00E5FF";ctx.shadowBlur=15;ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle="#00E5FF";ctx.beginPath();ctx.roundRect(-6,-10,12,18,2);ctx.fill();
+    ctx.fillStyle="#00B0FF";ctx.beginPath();ctx.moveTo(-6,-10);ctx.lineTo(0,-16);ctx.lineTo(6,-10);ctx.fill();
+  } else if(type==='turbo'){
+    ctx.fillStyle="rgba(255,234,0,.3)";ctx.shadowColor="#FFEA00";ctx.shadowBlur=15;ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle="#FFEA00";
+    ctx.beginPath();ctx.moveTo(4,-14);ctx.lineTo(-10,2);ctx.lineTo(0,2);
+    ctx.lineTo(-4,14);ctx.lineTo(10,-2);ctx.lineTo(0,-2);ctx.closePath();ctx.fill();
+  } else if(type==='shield'){
+    ctx.fillStyle="rgba(255,193,7,.3)";ctx.shadowColor="#FFC107";ctx.shadowBlur=15;ctx.fill();ctx.shadowBlur=0;
+    ctx.fillStyle="#FFC107";
+    ctx.beginPath();ctx.moveTo(0,-15);ctx.lineTo(12,-8);ctx.lineTo(12,5);
+    ctx.lineTo(0,15);ctx.lineTo(-12,5);ctx.lineTo(-12,-8);ctx.closePath();ctx.fill();
+    ctx.fillStyle="#FF8F00";
+    ctx.beginPath();ctx.moveTo(0,-10);ctx.lineTo(8,-5);ctx.lineTo(8,3);
+    ctx.lineTo(0,10);ctx.lineTo(-8,3);ctx.lineTo(-8,-5);ctx.closePath();ctx.fill();
+  }
+  ctx.restore();
+}
+
+function showGuide(){
+  const input=document.getElementById('playerNameInput');
+  const errorEl=document.getElementById('nameError');
+  const raw=(input.value||'').trim();
+  if(raw.length<2){
+    errorEl.classList.add('show');
+    input.classList.add('error');
+    input.focus();
+    return;
+  }
+  errorEl.classList.remove('show');
+  input.classList.remove('error');
+  playerName=raw;
+  document.getElementById('nameDisplay').innerText=playerName;
+  document.getElementById('startModal').style.display='none';
+  document.getElementById('guideModal').style.display='flex';
+}
+
+function startGame(){
+  console.log('startGame called');
+  try{
+    initMediaFiles();
+    document.getElementById('guideModal').style.display='none';
+
+    score=0;lives=5;ammo=5;distance=0;time=0;level=1;correctAnswers=0;frames=0;
+    gameSpeed=initialGameSpeed;maxSpeedReached=100;hasRevived=false;
+    enemies=[];bullets=[];powerups=[];bossBullets=[];
+    boss=null;isBossMode=false;bossBasesDestroyed=0;isEndlessMode=false;MAX_LEVEL=10;
+    difficultyMultiplier=1;
+    player.lane=1;player.turboTimer=0;player.shieldTimer=0;
+    availableMathList=[...mathList];
+
+    document.getElementById('hud').style.display='flex';
+    document.getElementById('levelDisplay').style.display='block';
+    document.getElementById('controls').style.display='flex';
+
+    if(!isMuted&&bgMusic) bgMusic.play().catch(e=>console.log(e));
+    isPaused=false;
+
+    if(gameInterval) clearInterval(gameInterval);
+    gameInterval=setInterval(()=>{
+      if(!isPaused){
+        time++;
+        if(time>0&&time%30===0){
+          if(level<MAX_LEVEL||isEndlessMode){
+            level++;gameSpeed*=1.05;difficultyMultiplier+=.2;
+            let banner=document.getElementById('levelDisplay');
+            banner.innerText="سطح "+toFa(level);
+            banner.style.transform="translateX(-50%) scale(1.3)";
+            setTimeout(()=>banner.style.transform="translateX(-50%) scale(1)",500);
+            if(level===3||level===6||level===9||level===10||(level>10&&(level-10)%3===0)){
+              startBossMode();
+            }
+          }
+        }
+        if(!isBossMode){
+          let cycleTime=time%60;
+          if(cycleTime===0){targetCurveMagnitude=0;targetLanes=3;}
+          else if(cycleTime===40){
+            targetLanes=[2,3,4][Math.floor(Math.random()*3)];
+            curveDirection=(Math.random()>.5?1:-1);
+            targetCurveMagnitude=.3+Math.random()*.4;
+          }
+        }
+      }
+    },1000);
+
+    resize();
+    if(gameLoopId) cancelAnimationFrame(gameLoopId);
+    loop();
+    console.log('game started');
+  }catch(e){
+    console.error('startGame failed:',e);
+    alert('خطا در شروع بازی: '+e.message);
+  }
+}
+
+function startBossMode(){
+  isBossMode=true;preBossGameSpeed=gameSpeed;targetLanes=5;targetCurveMagnitude=0;
+  let bossHealth=20+(level>10?(level-10)*2:0);
+  boss={hp:bossHealth,maxHp:bossHealth,y:-150,xOffset:0,direction:1,
+        lastShot5:time,lastShot10:time,lastShot8:time,lastMinionSpawn:time};
+  document.getElementById('bossHpBar').style.display='block';
+  document.getElementById('bossHpFill').style.width='100%';
+  enemies=[];
+  if(!isMuted&&tankAudio&&tankAudio.paused) tankAudio.play().catch(e=>console.log(e));
+}
+
+function loop(){
+  if(!isPaused){update();draw();}
+  gameLoopId=requestAnimationFrame(loop);
+}
+
+function update(){
+  frames++;
+  currentLanes+=(targetLanes-currentLanes)*.02;
+  currentCurveMagnitude+=(targetCurveMagnitude-currentCurveMagnitude)*.02;
+  laneWidth=roadWidth/currentLanes;
+  let maxLaneIndex=Math.round(currentLanes)-1;
+  if(player.lane>maxLaneIndex) player.lane=maxLaneIndex;
+  enemies.forEach(e=>{if(e.lane>maxLaneIndex) e.lane=maxLaneIndex;});
+  powerups.forEach(p=>{if(p.lane>maxLaneIndex) p.lane=maxLaneIndex;});
+
+  if(isBossMode){gameSpeed-=.05;if(gameSpeed<3) gameSpeed=3;}
+  let speedMultiplier=player.turboTimer>0?1.5:1;
+  let currentSpeed=gameSpeed*speedMultiplier;
+  let currentSpeedPerc=Math.floor((gameSpeed/initialGameSpeed)*100);
+  if(currentSpeedPerc>maxSpeedReached) maxSpeedReached=currentSpeedPerc;
+  distance+=(currentSpeed/10);
+
+  if(player.turboTimer>0){player.turboTimer--;if(player.turboTimer===0&&turboAudio){turboAudio.pause();turboAudio.currentTime=0;}}
+  if(player.shieldTimer>0) player.shieldTimer--;
+
+  roadOffset+=currentSpeed;
+  if(roadOffset>150) roadOffset=0;
+
+  let occupiedLanes=powerups.filter(p=>p.y<200).map(p=>p.lane);
+  let availableLanes=Array.from({length:Math.round(currentLanes)},(_,i)=>i).filter(l=>!occupiedLanes.includes(l));
+
+  if(time>0){
+    if(time%15===0&&time!==lastShieldTime){
+      lastShieldTime=time;
+      if(availableLanes.length>0){let lane=availableLanes.splice(Math.floor(Math.random()*availableLanes.length),1)[0];powerups.push({lane:lane,y:-250,type:'shield'});}
+    }
+    if(time%5===0&&time!==lastRepairTime){
+      lastRepairTime=time;
+      if(availableLanes.length>0){let lane=availableLanes.splice(Math.floor(Math.random()*availableLanes.length),1)[0];powerups.push({lane:lane,y:-250,type:'repair'});}
+    }
+    if(time>120&&time%10===0&&time!==lastTurboTime&&!isBossMode){
+      lastTurboTime=time;
+      if(availableLanes.length>0){let lane=availableLanes.splice(Math.floor(Math.random()*availableLanes.length),1)[0];powerups.push({lane:lane,y:-250,type:'turbo'});}
+    }
+    if(time%5===0&&time!==lastAmmoTime){
+      lastAmmoTime=time;
+      if(availableLanes.length>0){let lane=availableLanes.splice(Math.floor(Math.random()*availableLanes.length),1)[0];powerups.push({lane:lane,y:-250,type:'ammo'});}
+    }
+  }
+
+  if(!isBossMode&&frames%Math.max(30,Math.floor(80-difficultyMultiplier*10))===0){
+    let isTank=Math.random()>.8&&difficultyMultiplier>1.2;
+    let safeLanes=Array.from({length:Math.round(currentLanes)},(_,i)=>i);
+    if(!isTank){let tankLanes=enemies.filter(e=>e.type==='tank').map(e=>e.lane);safeLanes=safeLanes.filter(l=>!tankLanes.includes(l));}
+    let occupiedLanesNearTop=enemies.filter(e=>e.y>-250&&e.y<100).map(e=>e.lane);
+    let uniqueOccupied=[...new Set(occupiedLanesNearTop)];
+    if(uniqueOccupied.length<Math.round(currentLanes)-1){
+      safeLanes=safeLanes.filter(l=>!occupiedLanesNearTop.includes(l));
+      if(safeLanes.length>0){
+        let lane=safeLanes[Math.floor(Math.random()*safeLanes.length)];
+        enemies.push({lane:lane,y:-250,type:isTank?'tank':'car',speed:isTank?gameSpeed*.6:gameSpeed*.9,hp:1});
+      }
+    }
+  }
+
+  bullets.forEach((b,index)=>{b.y-=15;if(b.y<-50) bullets.splice(index,1);});
+  let playerLogicalX=player.currentX;
+
+  if(isBossMode&&boss){
+    boss.y+=(150-boss.y)*.05;
+    boss.xOffset+=boss.direction*1.5;
+    let maxOffset=laneWidth*1.5;
+    if(boss.xOffset>maxOffset){boss.xOffset=maxOffset;boss.direction=-1;}
+    else if(boss.xOffset<-maxOffset){boss.xOffset=-maxOffset;boss.direction=1;}
+    let bossX=width/2+boss.xOffset;
+
+    if(time-boss.lastShot5>=5){
+      boss.lastShot5=time;playSfx('enemyShoot');
+      let dx=playerLogicalX-bossX,dy=player.y-(boss.y+60),dist=Math.hypot(dx,dy)||1;
+      bossBullets.push({x:bossX,y:boss.y+60,vx:(dx/dist)*6,vy:(dy/dist)*6});
+    }
+    if(time-boss.lastShot10>=10){
+      boss.lastShot10=time;playSfx('enemyShoot');
+      [-2,-.6,.6,2].forEach(vx=>{bossBullets.push({x:bossX,y:boss.y+60,vx:vx*1.5,vy:5});});
+    }
+    if(level>=9&&time-boss.lastShot8>=8){
+      boss.lastShot8=time;playSfx('enemyShoot');
+      let dx=playerLogicalX-bossX,dy=player.y-(boss.y+60),dist=Math.hypot(dx,dy)||1;
+      for(let i=0;i<4;i++){
+        let offsetX=(i-1.5)*30;
+        bossBullets.push({x:bossX+offsetX,y:boss.y+60,vx:(dx/dist)*6,vy:(dy/dist)*6});
+      }
+    }
+    if(level>=9&&time-boss.lastMinionSpawn>=10){
+      boss.lastMinionSpawn=time;
+      let minionTypes=['car','car','car','tank','tank'].sort(()=>Math.random()-.5);
+      let safeLanes=Array.from({length:Math.round(currentLanes)},(_,i)=>i);
+      for(let i=0;i<minionTypes.length;i++){
+        let lane=safeLanes[Math.floor(Math.random()*safeLanes.length)];
+        enemies.push({lane:lane,y:-250-(i*120),type:minionTypes[i],speed:minionTypes[i]==='tank'?gameSpeed*.6:gameSpeed*.9,hp:1});
+      }
+    }
+
+    bullets.forEach((b,bIndex)=>{
+      let bLogicalX=15+(b.lane*laneWidth)+(laneWidth/2);
+      if(b.y<boss.y+80&&Math.abs(bLogicalX-bossX)<100){
+        boss.hp--;bullets.splice(bIndex,1);
+        document.getElementById('bossHpFill').style.width=(boss.hp/boss.maxHp*100)+'%';
+        if(boss.hp<=0){
+          playSfx('crash');
+          isBossMode=false;score+=(level>10?200:100);bossBasesDestroyed++;
+          document.getElementById('bossHpBar').style.display='none';
+          gameSpeed=preBossGameSpeed;bossBullets=[];isPaused=true;
+          if(level===MAX_LEVEL&&!isEndlessMode){
+            document.getElementById('msgBoxText').innerText=`تبریک ${playerName}! تمام پایگاه‌های دشمن نابود شدند!`;
+            document.getElementById('messageModal').style.display='flex';
+            setTimeout(()=>{
+              document.getElementById('messageModal').style.display='none';
+              document.getElementById('level10Modal').style.display='flex';
+            },4000);
+          } else {
+            let msg=(level<MAX_LEVEL)?
+              (bossBasesDestroyed===1?"اولین پایگاه دشمن نابود شد، دو تای دیگه مونده!":"یک پایگاه دیگر نابود شد!"):
+              "یک غول دیگر نابود شد! به رکوردزنی ادامه بده! 🚀";
+            document.getElementById('msgBoxText').innerText=msg;
+            document.getElementById('messageModal').style.display='flex';
+            setTimeout(()=>{
+              document.getElementById('messageModal').style.display='none';
+              isPaused=false;
+            },4000);
+          }
+        }
+      }
+    });
+  }
+
+  bossBullets.forEach((bb,bbIndex)=>{
+    bb.x+=bb.vx;bb.y+=bb.vy+(speedMultiplier===1.5?gameSpeed*.5:0);
+    if(bb.y>height+50){bossBullets.splice(bbIndex,1);}
+    else if(Math.abs(bb.y-player.y)<40&&Math.abs(bb.x-playerLogicalX)<30){
+      bossBullets.splice(bbIndex,1);
+      if(player.shieldTimer>0) playSfx('crash');
+      else loseLife();
+    }
+  });
+
+  enemies.forEach((e,eIndex)=>{
+    e.y+=e.speed+(speedMultiplier===1.5?gameSpeed:0);
+    let eLogicalX=15+(e.lane*laneWidth)+(laneWidth/2);
+    bullets.forEach((b,bIndex)=>{
+      let bLogicalX=15+(b.lane*laneWidth)+(laneWidth/2);
+      if(Math.abs(bLogicalX-eLogicalX)<40&&Math.abs(b.y-e.y)<30){
+        e.hp--;bullets.splice(bIndex,1);
+        if(e.hp<=0){
+          playSfx('crash');enemies.splice(eIndex,1);
+          score+=(e.type==='tank'?20:10);
+        }
+      }
+    });
+    if(Math.abs(e.y-player.y)<65&&Math.abs(eLogicalX-playerLogicalX)<45){
+      if(player.shieldTimer>0){
+        playSfx('crash');enemies.splice(eIndex,1);score+=(e.type==='tank'?20:10);
+      } else {
+        enemies.splice(eIndex,1);loseLife();
+      }
+    }
+    if(e.y>height+50) enemies.splice(eIndex,1);
+  });
+
+  powerups.forEach((p,pIndex)=>{
+    p.y+=currentSpeed*.8;
+    let pLogicalX=15+(p.lane*laneWidth)+(laneWidth/2);
+    if(Math.abs(p.y-player.y)<60&&Math.abs(pLogicalX-playerLogicalX)<45){
+      playSfx('powerup');powerups.splice(pIndex,1);
+      if(p.type==='turbo'){
+        player.turboTimer=300;
+        if(!isMuted&&turboAudio){turboAudio.currentTime=0;turboAudio.play().catch(e=>console.log(e));}
+      } else if(p.type==='shield'){
+        player.shieldTimer=300;
+      } else {
+        activePowerup=p.type;triggerTrivia();
+      }
+    }
+    if(p.y>height+50) powerups.splice(pIndex,1);
+  });
+
+  updateHUD();
+}
+
+function draw(){
+  ctx.fillStyle="#388E3C";ctx.fillRect(0,0,width,height);
+  ctx.fillStyle="#2a2a2a";ctx.beginPath();
+  for(let y=height+50;y>=-250;y-=40) ctx.lineTo(15+getCurveOffset(y),y);
+  for(let y=-250;y<=height+50;y+=40) ctx.lineTo(width-15+getCurveOffset(y),y);
+  ctx.fill();
+  ctx.fillStyle="rgba(0,0,0,.2)";
+  for(let i=-100;i<height+100;i+=40){
+    let y=i+(roadOffset%40),nextY=y+10;
+    let dx1=getCurveOffset(y),dx2=getCurveOffset(nextY);
+    ctx.beginPath();
+    ctx.lineTo(15+dx1,y);ctx.lineTo(width-15+dx1,y);
+    ctx.lineTo(width-15+dx2,nextY);ctx.lineTo(15+dx2,nextY);
+    ctx.fill();
+  }
+  ctx.strokeStyle="#FBC02D";ctx.lineWidth=5;
+  ctx.beginPath();for(let y=-250;y<=height+50;y+=40) ctx.lineTo(17+getCurveOffset(y),y);ctx.stroke();
+  ctx.beginPath();for(let y=-250;y<=height+50;y+=40) ctx.lineTo(width-17+getCurveOffset(y),y);ctx.stroke();
+  ctx.lineWidth=6;ctx.setLineDash([80,100]);ctx.lineDashOffset=-roadOffset;
+  for(let i=1;i<Math.ceil(currentLanes);i++){
+    let xPos=15+(i*laneWidth);
+    let opacity=.35;
+    if(i>currentLanes-1){opacity=.35*(currentLanes%1);if(opacity===0&&currentLanes%1!==0) opacity=.35;}
+    ctx.strokeStyle=`rgba(255,255,255,${opacity})`;
+    ctx.beginPath();for(let y=-250;y<=height+50;y+=40) ctx.lineTo(xPos+getCurveOffset(y),y);ctx.stroke();
+  }
+  ctx.setLineDash([]);ctx.lineDashOffset=0;
+
+  if(isBossMode&&boss) drawTank(ctx,width/2+boss.xOffset+getCurveOffset(boss.y),boss.y,boss.hp,1.2);
+
+  bossBullets.forEach(bb=>{
+    let bx=bb.x+getCurveOffset(bb.y),by=bb.y;
+    ctx.shadowColor="#FF1744";ctx.shadowBlur=15;
+    ctx.fillStyle="#FF1744";ctx.beginPath();ctx.arc(bx,by,10,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;ctx.fillStyle="#FFF";ctx.beginPath();ctx.arc(bx,by,4,0,Math.PI*2);ctx.fill();
+  });
+  bullets.forEach(b=>{
+    let bx=15+(b.lane*laneWidth)+(laneWidth/2)+getCurveOffset(b.y);
+    ctx.fillStyle="#FF9800";ctx.beginPath();ctx.roundRect(bx-3,b.y+6,6,14,3);ctx.fill();
+    ctx.fillStyle="#FFF";ctx.shadowColor="#FFFF00";ctx.shadowBlur=10;
+    ctx.beginPath();ctx.roundRect(bx-4,b.y-10,8,20,4);ctx.fill();
+    ctx.shadowBlur=0;
+  });
+  powerups.forEach(p=>{
+    let x=15+(p.lane*laneWidth)+(laneWidth/2)+getCurveOffset(p.y);
+    drawPowerupIcon(ctx,x,p.y,p.type);
+  });
+  enemies.forEach(e=>{
+    let x=15+(e.lane*laneWidth)+(laneWidth/2)+getCurveOffset(e.y);
+    if(e.type==='tank') drawTank(ctx,x,e.y,e.hp);
+    else drawCar(ctx,x,e.y,"#1976D2",false,true);
+  });
+
+  player.draw();
+}
+
+function moveRight(){if(player.lane<Math.round(currentLanes)-1) player.lane++;}
+function moveLeft(){if(player.lane>0) player.lane--;}
+function shoot(){
+  if(ammo>0){
+    if(!isMuted&&shootSoundTemplate){
+      let s=shootSoundTemplate.cloneNode();s.volume=.8;s.play().catch(e=>console.log(e));
+    }
+    bullets.push({lane:player.lane,y:player.y-25});
+    ammo--;updateHUD();
+  }
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  const btnL=document.getElementById('btnLeft');
+  const btnR=document.getElementById('btnRight');
+  const btnS=document.getElementById('btnShoot');
+  if(btnL){
+    btnL.addEventListener('touchstart',e=>{e.preventDefault();moveLeft();},{passive:false});
+    btnL.addEventListener('mousedown',moveLeft);
+  }
+  if(btnR){
+    btnR.addEventListener('touchstart',e=>{e.preventDefault();moveRight();},{passive:false});
+    btnR.addEventListener('mousedown',moveRight);
+  }
+  if(btnS){
+    btnS.addEventListener('touchstart',e=>{e.preventDefault();shoot();},{passive:false});
+    btnS.addEventListener('mousedown',shoot);
+  }
+  const nameInput=document.getElementById('playerNameInput');
+  nameInput.addEventListener('input',()=>{
+    if(nameInput.value.trim().length>=2){
+      document.getElementById('nameError').classList.remove('show');
+      nameInput.classList.remove('error');
+    }
+  });
+  nameInput.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){e.preventDefault();showGuide();}
+  });
+  window.addEventListener('keydown',e=>{
+    if(isPaused||document.getElementById('controls').style.display==='none') return;
+    if(e.key==='ArrowRight'||e.code==='ArrowRight'){e.preventDefault();moveRight();}
+    else if(e.key==='ArrowLeft'||e.code==='ArrowLeft'){e.preventDefault();moveLeft();}
+    else if(e.code==='Space'){e.preventDefault();shoot();}
+  });
+});
+
+function loseLife(){
+  playSfx('crash');lives--;
+  if(lives<=0){
+    isPaused=true;
+    if(bgMusic) bgMusic.pause();
+    if(tankAudio) tankAudio.pause();
+    if(turboAudio) turboAudio.pause();
+
+    document.getElementById('gameOverTitle').innerText="💥 تصادف کردی! کارنامه بازی";
+    document.getElementById('finalName').innerText=playerName;
+    document.getElementById('finalLevel').innerText=toFa(level);
+    document.getElementById('finalScore').innerText=toFa(score);
+    document.getElementById('finalTime').innerText=toFa(time);
+    document.getElementById('finalDist').innerText=toFa((distance/100).toFixed(1));
+    document.getElementById('finalSpeed').innerText=toFa(maxSpeedReached);
+    document.getElementById('finalCorrect').innerText=toFa(correctAnswers);
+
+    if(!hasRevived){
+      document.getElementById('btnRevive').style.display='inline-block';
+      document.getElementById('gameoverMotiv').innerText=`شکست مقدمه پیروزیه، دفعه بعد حتما رکورد می‌زنی ریاضی‌دان ${playerName}! 🌟`;
+    } else {
+      document.getElementById('btnRevive').style.display='none';
+      document.getElementById('gameoverMotiv').innerText=`تلاشت عالی بود ${playerName}! دفعه بعد حتما بهتر میشی.`;
+    }
+    document.getElementById('gameOverModal').style.display='flex';
+  }
+}
+
+function revivePlayer(){
+  hasRevived=true;lives=3;ammo+=5;isPaused=false;
+  document.getElementById('gameOverModal').style.display='none';
+  if(!isMuted&&bgMusic) bgMusic.play().catch(e=>console.log(e));
+  enemies=enemies.filter(e=>e.y<player.y-200);bossBullets=[];
+}
+
+function updateHUD(){
+  document.getElementById('timeDisplay').innerText=toFa(time);
+  document.getElementById('distDisplay').innerText=toFa((distance/100).toFixed(1));
+  document.getElementById('speedDisplay').innerText=toFa(Math.floor((gameSpeed/initialGameSpeed)*100));
+  document.getElementById('scoreDisplay').innerText=toFa(score);
+  document.getElementById('ammoDisplay').innerText=toFa(ammo);
+  document.getElementById('livesDisplay').innerText="❤️".repeat(lives);
+  document.getElementById('correctDisplay').innerText=toFa(correctAnswers);
+}
+
+let currentQuestion=null;
+
+function triggerTrivia(){
+  isPaused=true;
+  if(tankAudio&&!tankAudio.paused) tankAudio.pause();
+  if(turboAudio&&!turboAudio.paused) turboAudio.pause();
+
+  if(availableMathList.length===0) availableMathList=[...mathList];
+  let randomIndex=Math.floor(Math.random()*availableMathList.length);
+  currentQuestion=availableMathList.splice(randomIndex,1)[0];
+
+  let allOptions=currentQuestion.opts.map(opt=>({m:opt}));
+  allOptions.sort(()=>Math.random()-.5);
+
+  document.getElementById('questionText').innerText=currentQuestion.w;
+  const optionsContainer=document.getElementById('optionsContainer');
+  optionsContainer.innerHTML='';
+  allOptions.forEach(opt=>{
+    let btn=document.createElement('button');
+    btn.className='option-btn';btn.innerText=opt.m;
+    btn.onclick=()=>checkAnswer(opt.m===currentQuestion.m);
+    optionsContainer.appendChild(btn);
+  });
+  document.getElementById('questionModal').style.display='flex';
+}
+
+function checkAnswer(isCorrect){
+  let encText=document.getElementById('encouragementText');
+  if(isCorrect){
+    correctAnswers++;playSfx('correct');
+    if(!isMuted&&applauseAudio){
+      applauseAudio.currentTime=0;applauseAudio.play().catch(e=>console.log(e));
+      setTimeout(()=>applauseAudio.pause(),3000);
+    }
+    encText.innerText=getEncouragement();
+    encText.style.display='block';
+    generateConfetti();
+    if(activePowerup==='ammo'){
+      ammo+=5;
+      if(!isMuted&&reloadAudio){reloadAudio.currentTime=0;reloadAudio.play().catch(e=>console.log(e));}
+    }
+    if(activePowerup==='repair'&&lives<5) lives++;
+  } else {
+    encText.style.display='none';playSfx('wrong');
+    alert("پاسخ اشتباه بود! جواب صحیح: "+currentQuestion.m);
+  }
+  startCountdown(isCorrect);
+}
+
+function generateConfetti(){
+  const colors=['#FF5252','#448AFF','#69F0AE','#FFD740','#E040FB'];
+  const container=document.getElementById('countdownModal');
+  for(let i=0;i<70;i++){
+    let conf=document.createElement('div');conf.className='confetti';
+    conf.style.left=(40+Math.random()*20)+'vw';
+    conf.style.backgroundColor=colors[Math.floor(Math.random()*colors.length)];
+    let tx=(Math.random()-.5)*600+'px',ty=-(Math.random()*600+400)+'px';
+    conf.style.setProperty('--tx',tx);conf.style.setProperty('--ty',ty);
+    conf.style.animation=`shootUp ${Math.random()*1.5+1.5}s ease-out forwards`;
+    container.appendChild(conf);
+    setTimeout(()=>conf.remove(),3000);
+  }
+}
+
+function startCountdown(showEncouragement){
+  document.getElementById('questionModal').style.display='none';
+  let cdModal=document.getElementById('countdownModal');
+  let cdText=document.getElementById('countdownText');
+  if(!showEncouragement) document.getElementById('encouragementText').style.display='none';
+  cdModal.style.display='flex';
+  let count=3;cdText.innerText=toFa(count);
+  let interval=setInterval(()=>{
+    count--;
+    if(count>0){cdText.innerText=toFa(count);}
+    else{
+      clearInterval(interval);cdModal.style.display='none';
+      document.getElementById('encouragementText').style.display='none';
+      if(!isMuted&&player.turboTimer>0&&turboAudio) turboAudio.play().catch(e=>console.log(e));
+      isPaused=false;
+    }
+  },1000);
+}
+
+function continueEndless(){
+  document.getElementById('level10Modal').style.display='none';
+  isEndlessMode=true;isPaused=false;
+  if(!isMuted&&bgMusic) bgMusic.play().catch(e=>console.log(e));
+}
+
+function showFinalReport(){
+  document.getElementById('level10Modal').style.display='none';
+  showVictoryScreen(true);
+}
+
+function showVictoryScreen(isFromLevel10=false){
+  isPaused=true;
+  if(bgMusic) bgMusic.pause();
+  if(tankAudio) tankAudio.pause();
+  if(turboAudio) turboAudio.pause();
+
+  document.getElementById('gameOverTitle').innerText="🎉 برنده شدی! کارنامه بازی";
+  document.getElementById('finalName').innerText=playerName;
+  document.getElementById('finalLevel').innerText=toFa(level);
+  document.getElementById('finalScore').innerText=toFa(score);
+  document.getElementById('finalTime').innerText=toFa(time);
+  document.getElementById('finalDist').innerText=toFa((distance/100).toFixed(1));
+  document.getElementById('finalSpeed').innerText=toFa(maxSpeedReached);
+  document.getElementById('finalCorrect').innerText=toFa(correctAnswers);
+  document.getElementById('btnRevive').style.display='none';
+
+  if(isFromLevel10){
+    document.getElementById('gameoverMotiv').innerText=`تو یک قهرمان واقعی هستی ${playerName}! 🌟 تمام پایگاه‌های دشمن نابود شدند.`;
+  } else {
+    document.getElementById('gameoverMotiv').innerText=`رکورد فوق‌العاده‌ای ثبت کردی ${playerName}! 🌟`;
+  }
+  generateConfetti();
+  document.getElementById('gameOverModal').style.display='flex';
+}
+
+window.addEventListener('load',()=>{
+  resize();
+  draw();
+});
+</script>
+</body>
+</html>
